@@ -40,7 +40,7 @@ clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_
 # Setup
 # ──────────────────────────────────────────────
 .PHONY: launch
-launch: clone hosts certs up composer-install migrate-fresh-seed ## First-time launch: clone repos, add /etc/hosts entries, generate certs, start containers, install deps, run migrations, seed DB
+launch: clone hosts certs up composer-install migrate-fresh-seed docs ## First-time launch: clone repos, add /etc/hosts entries, generate certs, start containers, install deps, run migrations, seed DB, generate API docs
 
 .PHONY: hosts
 hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
