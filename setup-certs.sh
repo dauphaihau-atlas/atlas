@@ -21,13 +21,13 @@ mkdir -p "$CERTS_DIR"
 
 # Generate certificates
 mkcert \
-    -cert-file "$CERTS_DIR/admin-dashboard.local.crt" \
-    -key-file  "$CERTS_DIR/admin-dashboard.local.key" \
-    admin-dashboard.local
+    -cert-file "$CERTS_DIR/atlas.local.crt" \
+    -key-file  "$CERTS_DIR/atlas.local.key" \
+    atlas.local
 
 mkcert \
-    -cert-file "$CERTS_DIR/api.admin-dashboard.local.crt" \
-    -key-file  "$CERTS_DIR/api.admin-dashboard.local.key" \
-    api.admin-dashboard.local
+    -cert-file "$CERTS_DIR/api.atlas.local.crt" \
+    -key-file  "$CERTS_DIR/api.atlas.local.key" \
+    api.atlas.local
 
 echo "Certificates generated in $CERTS_DIR"

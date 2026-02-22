@@ -1,4 +1,4 @@
-name: admin-dashboard
+name: atlas
 
 networks:
   app_network:
@@ -13,7 +13,7 @@ volumes:
 services:
   nginx:
     image: nginx:1.27-alpine
-    container_name: admin-dashboard-nginx
+    container_name: atlas-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -31,7 +31,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: admin-dashboard-php
+    container_name: atlas-php
     restart: unless-stopped
     volumes:
       - ./backend:/var/www/html
@@ -45,7 +45,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: admin-dashboard-horizon
+    container_name: atlas-horizon
     restart: unless-stopped
     command: ["php", "artisan", "horizon"]
     volumes:
@@ -62,7 +62,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: admin-dashboard-reverb
+    container_name: atlas-reverb
     restart: unless-stopped
     command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080", "--debug"]
     volumes:
@@ -79,7 +79,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: admin-dashboard-frontend
+    container_name: atlas-frontend
     restart: unless-stopped
     volumes:
       - ./frontend:/app
@@ -89,10 +89,10 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: admin-dashboard-postgres
+    container_name: atlas-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: admin_dashboard
+      POSTGRES_DB: atlas
       POSTGRES_USER: laravel
       POSTGRES_PASSWORD: secret
     ports:
@@ -100,7 +100,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U laravel -d admin_dashboard"]
+      test: ["CMD-SHELL", "pg_isready -U laravel -d atlas"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -108,7 +108,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: admin-dashboard-redis
+    container_name: atlas-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -123,7 +123,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: admin-dashboard-minio
+    container_name: atlas-minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
@@ -143,7 +143,7 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest
-    container_name: admin-dashboard-mailpit
+    container_name: atlas-mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"

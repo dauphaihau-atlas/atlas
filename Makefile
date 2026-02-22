@@ -1,8 +1,8 @@
 PHP = docker compose exec php
 DC  = docker compose
 
-BACKEND_REPO  ?= https://github.com/dauphaihau/admin-dashboard-laravel.git
-FRONTEND_REPO ?= https://github.com/dauphaihau/web-admin-dashboard-lavaravel
+BACKEND_REPO  ?= https://github.com/dauphaihau/atlas-laravel.git
+FRONTEND_REPO ?= https://github.com/dauphaihau/web-atlas-lavaravel
 
 .DEFAULT_GOAL := help
 
@@ -158,4 +158,4 @@ shell: ## Open a shell inside the PHP container
 
 .PHONY: shell-postgres
 shell-postgres: ## Open a psql session
-	$(DC) exec postgres psql -U laravel -d admin_dashboard
+	$(DC) exec postgres psql -U laravel -d atlas
