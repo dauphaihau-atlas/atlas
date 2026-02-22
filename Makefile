@@ -40,7 +40,16 @@ clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_
 # Setup
 # ──────────────────────────────────────────────
 .PHONY: launch
-launch: clone hosts certs up composer-install migrate-fresh-seed docs ## First-time launch: clone repos, add /etc/hosts entries, generate certs, start containers, install deps, run migrations, seed DB, generate API docs
+launch: clone env hosts certs up composer-install key-generate migrate-fresh-seed docs ## First-time launch: clone repos, copy .env files, add /etc/hosts entries, generate certs, start containers, install deps, generate app key, run migrations, seed DB, generate API docs
+
+.PHONY: env
+env: ## Copy Docker-ready .env templates to backend/ and frontend/ (skips if already exists)
+	@[ -f backend/.env ]  || cp templates/backend.env  backend/.env
+	@[ -f frontend/.env ] || cp templates/frontend.env frontend/.env
+
+.PHONY: key-generate
+key-generate: ## Generate Laravel APP_KEY and write it to backend/.env
+	$(PHP) php artisan key:generate --force
 
 .PHONY: hosts
 hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
