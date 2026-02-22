@@ -39,8 +39,8 @@ clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_
 # ──────────────────────────────────────────────
 # Setup
 # ──────────────────────────────────────────────
-.PHONY: setup
-setup: hosts certs up migrate seed ## First-time setup: add /etc/hosts entries, generate certs, start containers, run migrations, seed DB
+.PHONY: launch
+launch: hosts certs up migrate seed ## First-time launch: add /etc/hosts entries, generate certs, start containers, run migrations, seed DB
 
 .PHONY: hosts
 hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
