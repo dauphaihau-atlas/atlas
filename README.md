@@ -2,6 +2,11 @@
 
 Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and frontend (Next.js) via Docker Compose.
 
+## Repositories
+
+- [atlas-be](https://github.com/dauphaihau/atlas-be) — Laravel backend
+- [atlas-web](https://github.com/dauphaihau/atlas-web) — Next.js frontend
+
 ## Prerequisites
 
 - **`make`** — comes with Xcode CLI tools on macOS (`xcode-select --install`)
