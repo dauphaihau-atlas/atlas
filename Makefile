@@ -70,7 +70,8 @@ hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
 
 .PHONY: hosts-clean
 hosts-clean: ## Remove atlas.local entries from /etc/hosts (requires sudo)
-	sudo sed -i '' '/atlas\.local/d' /etc/hosts
+	@echo "sudo required to remove atlas.local entries from /etc/hosts"
+	@sudo sed -i '' '/atlas\.local/d' /etc/hosts
 
 .PHONY: certs
 certs: ## Generate local TLS certificates via mkcert
