@@ -1,6 +1,6 @@
 # Atlas
 
-Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and frontend (Next.js) via Docker Compose.
+Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and frontend (React) via Docker Compose.
 
 ## Repositories
 
