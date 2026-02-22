@@ -3,6 +3,7 @@ DC  = docker compose
 
 BACKEND_REPO  ?= https://github.com/dauphaihau/atlas-be.git
 FRONTEND_REPO ?= https://github.com/dauphaihau/atlas-web.git
+MINIO_BUCKET  ?= local
 
 .DEFAULT_GOAL := help
 
@@ -44,7 +45,7 @@ clone-clean: ## Remove cloned backend/ and frontend/ directories
 # Setup
 # ──────────────────────────────────────────────
 .PHONY: launch
-launch: clone env hosts certs up composer-install key-generate migrate-fresh-seed docs ## First-time launch: clone repos, copy .env files, add /etc/hosts entries, generate certs, start containers, install deps, generate app key, run migrations, seed DB, generate API docs
+launch: clone env hosts certs up minio-setup composer-install key-generate migrate-fresh-seed docs ## First-time launch: clone repos, copy .env files, add /etc/hosts entries, generate certs, start containers, create MinIO bucket, install deps, generate app key, run migrations, seed DB, generate API docs
 
 .PHONY: env
 env: ## Copy Docker-ready .env templates to backend/ and frontend/ (skips if already exists)
@@ -102,6 +103,13 @@ restart: down up ## Restart all containers
 .PHONY: build
 build: ## Rebuild all images
 	$(DC) build
+
+.PHONY: minio-setup
+minio-setup: ## Create the MinIO bucket (MINIO_BUCKET, default: local)
+	@echo "Waiting for MinIO to be ready..."
+	@until $(DC) exec -T minio mc alias set local http://localhost:9000 minioadmin minioadmin > /dev/null 2>&1; do sleep 1; done
+	@$(DC) exec -T minio mc mb --ignore-existing local/$(MINIO_BUCKET)
+	@echo "MinIO bucket '$(MINIO_BUCKET)' ready."
 
 .PHONY: ps
 ps: ## Show running containers
