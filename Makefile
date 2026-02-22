@@ -1,6 +1,9 @@
 PHP = docker compose exec php
 DC  = docker compose
 
+BACKEND_REPO  ?= https://github.com/dauphaihau/admin-dashboard-laravel.git
+FRONTEND_REPO ?= https://github.com/dauphaihau/web-admin-dashboard-lavaravel
+
 .DEFAULT_GOAL := help
 
 # ──────────────────────────────────────────────
@@ -10,6 +13,28 @@ DC  = docker compose
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# ──────────────────────────────────────────────
+# Clone
+# ──────────────────────────────────────────────
+.PHONY: clone
+clone: clone-backend clone-frontend ## Clone both backend and frontend repos
+
+.PHONY: clone-backend
+clone-backend: ## Clone backend repo  (override: make clone-backend BACKEND_REPO=<url>)
+	@if [ -d backend/.git ]; then \
+		echo "backend/ already cloned, skipping."; \
+	else \
+		git clone $(BACKEND_REPO) backend; \
+	fi
+
+.PHONY: clone-frontend
+clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_REPO=<url>)
+	@if [ -d frontend/.git ]; then \
+		echo "frontend/ already cloned, skipping."; \
+	else \
+		git clone $(FRONTEND_REPO) frontend; \
+	fi
 
 # ──────────────────────────────────────────────
 # Setup
