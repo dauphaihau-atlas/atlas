@@ -1,0 +1,151 @@
+name: admin-dashboard
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  frontend_node_modules:
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: admin-dashboard-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./backend:/var/www/html:ro
+    depends_on:
+      - php
+      - frontend
+    networks: [app_network]
+
+  php:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: admin-dashboard-php
+    restart: unless-stopped
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    networks: [app_network]
+    env_file: ./backend/.env
+
+  horizon:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: admin-dashboard-horizon
+    restart: unless-stopped
+    command: ["php", "artisan", "horizon"]
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      php:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks: [app_network]
+    env_file: ./backend/.env
+
+  reverb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: admin-dashboard-reverb
+    restart: unless-stopped
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080", "--debug"]
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      php:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    networks: [app_network]
+    env_file: ./backend/.env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: admin-dashboard-frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    networks: [app_network]
+    env_file: ./frontend/.env
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: admin-dashboard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: admin_dashboard
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U laravel -d admin_dashboard"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks: [app_network]
+
+  redis:
+    image: redis:7-alpine
+    container_name: admin-dashboard-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks: [app_network]
+
+  minio:
+    image: minio/minio:latest
+    container_name: admin-dashboard-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks: [app_network]
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: admin-dashboard-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks: [app_network]
