@@ -5,7 +5,7 @@ Full-stack local development environment for Atlas, orchestrating the backend (L
 ## Repositories
 
 - [atlas-be](https://github.com/dauphaihau/atlas-be) — Laravel backend
-- [atlas-web](https://github.com/dauphaihau/atlas-web) — Next.js frontend
+- [atlas-web](https://github.com/dauphaihau/atlas-web) — React frontend
 
 ## Prerequisites
 
