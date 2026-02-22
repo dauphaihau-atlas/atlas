@@ -71,7 +71,7 @@ Once complete, the app is available at:
 | `atlas-php` | Laravel application (PHP-FPM) |
 | `atlas-horizon` | Laravel Horizon (queue worker) |
 | `atlas-reverb` | Laravel Reverb (WebSockets) |
-| `atlas-frontend` | Next.js frontend |
+| `atlas-frontend` | React (Vite) frontend |
 | `atlas-postgres` | PostgreSQL 16 |
 | `atlas-redis` | Redis 7 |
 | `atlas-minio` | MinIO (S3-compatible object storage) |
@@ -82,6 +82,7 @@ Once complete, the app is available at:
 ```bash
 make up                  # Start containers
 make down                # Stop containers
+make down-volumes        # Stop containers and delete volumes (DB data)
 make restart             # Restart containers
 make logs                # Tail all container logs
 make logs-php            # Tail PHP logs
@@ -94,4 +95,20 @@ make shell               # Shell into PHP container
 make shell-postgres      # Open psql session
 make pint                # Run Laravel Pint formatter
 make docs                # Regenerate API docs
+```
+
+## Teardown
+
+```bash
+make teardown      # Stop containers; remove /etc/hosts entries, certs, and .env files (keeps cloned repos)
+make teardown-all  # Everything above + remove backend/ and frontend/
+```
+
+Individual cleanup targets are also available if you only need to undo a specific step:
+
+```bash
+make hosts-clean   # Remove atlas.local entries from /etc/hosts
+make certs-clean   # Remove generated TLS certificates
+make env-clean     # Remove backend/.env and frontend/.env
+make clone-clean   # Remove backend/ and frontend/ directories
 ```

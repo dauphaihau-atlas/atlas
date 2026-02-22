@@ -36,6 +36,10 @@ clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_
 		git clone $(FRONTEND_REPO) frontend; \
 	fi
 
+.PHONY: clone-clean
+clone-clean: ## Remove cloned backend/ and frontend/ directories
+	rm -rf backend frontend
+
 # ──────────────────────────────────────────────
 # Setup
 # ──────────────────────────────────────────────
@@ -47,6 +51,10 @@ env: ## Copy Docker-ready .env templates to backend/ and frontend/ (skips if alr
 	@[ -f backend/.env ]  || cp templates/backend.env  backend/.env
 	@[ -f frontend/.env ] || cp templates/frontend.env frontend/.env
 
+.PHONY: env-clean
+env-clean: ## Remove backend/.env and frontend/.env
+	rm -f backend/.env frontend/.env
+
 .PHONY: key-generate
 key-generate: ## Generate Laravel APP_KEY and write it to backend/.env
 	$(PHP) php artisan key:generate --force
@@ -56,9 +64,17 @@ hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
 	@grep -q "atlas.local" /etc/hosts && echo "/etc/hosts already configured, skipping." || \
 		sudo sh -c 'echo "127.0.0.1  atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'
 
+.PHONY: hosts-clean
+hosts-clean: ## Remove atlas.local entries from /etc/hosts (requires sudo)
+	sudo sed -i '' '/atlas\.local/d' /etc/hosts
+
 .PHONY: certs
 certs: ## Generate local TLS certificates via mkcert
 	bash setup-certs.sh
+
+.PHONY: certs-clean
+certs-clean: ## Remove generated TLS certificates from nginx/certs/
+	rm -f nginx/certs/*.crt nginx/certs/*.key
 
 # ──────────────────────────────────────────────
 # Docker
@@ -70,6 +86,10 @@ up: ## Start all containers in the background
 .PHONY: down
 down: ## Stop and remove containers
 	$(DC) down
+
+.PHONY: down-volumes
+down-volumes: ## Stop and remove containers and volumes (deletes DB data)
+	$(DC) down -v
 
 .PHONY: restart
 restart: down up ## Restart all containers
@@ -173,3 +193,12 @@ shell: ## Open a shell inside the PHP container
 .PHONY: shell-postgres
 shell-postgres: ## Open a psql session
 	$(DC) exec postgres psql -U laravel -d atlas
+
+# ──────────────────────────────────────────────
+# Teardown
+# ──────────────────────────────────────────────
+.PHONY: teardown
+teardown: down hosts-clean certs-clean env-clean ## Stop containers and remove hosts, certs, and .env files (keeps cloned repos)
+
+.PHONY: teardown-all
+teardown-all: teardown clone-clean ## Full wipe: teardown + remove cloned repos
