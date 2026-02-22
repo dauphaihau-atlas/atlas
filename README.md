@@ -7,12 +7,25 @@ Full-stack local development environment for Atlas, orchestrating the backend (L
 - **`make`** — comes with Xcode CLI tools on macOS (`xcode-select --install`)
 - **Docker** — choose one:
   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (easiest)
+
+    **If your project is outside your home directory** (e.g. on an external volume like `/Volumes/...`), add the path via Settings → Resources → File Sharing, then click **Apply & Restart**.
+
   - [Colima](https://github.com/abiosoft/colima) (free, open-source alternative):
     ```bash
     brew install colima docker docker-compose
     colima start
     ```
     > Colima must be running (`colima start`) before `make launch` and on each machine restart.
+
+    **If your project is outside your home directory** (e.g. on an external volume like `/Volumes/...`), you must explicitly mount that path in Colima's config, otherwise containers will see an empty directory.
+
+    Add the path to `~/.colima/default/colima.yaml`:
+    ```yaml
+    mounts:
+      - location: /Volumes/Local/dev/pj-personal  # adjust to your path
+        writable: true
+    ```
+    Then apply with `colima restart`.
 
 ## Getting Started
 
@@ -35,6 +48,8 @@ make launch
 | `key-generate` | Generates Laravel `APP_KEY` |
 | `migrate-fresh-seed` | Runs migrations and seeds the database |
 | `docs` | Generates API documentation via Scribe |
+
+> `backend/` and `frontend/` are independent git repositories cloned into this monorepo shell. Run git commands for each from their own directory.
 
 Once complete, the app is available at:
 
