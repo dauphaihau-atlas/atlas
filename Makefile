@@ -1,8 +1,8 @@
 PHP = docker compose exec php
 DC  = docker compose
 
-BACKEND_REPO  ?= https://github.com/dauphaihau/atlas-laravel.git
-FRONTEND_REPO ?= https://github.com/dauphaihau/web-atlas-lavaravel
+BACKEND_REPO  ?= https://github.com/dauphaihau/atlas-be.git
+FRONTEND_REPO ?= https://github.com/dauphaihau/atlas-web.git
 
 .DEFAULT_GOAL := help
 
@@ -40,7 +40,12 @@ clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_
 # Setup
 # ──────────────────────────────────────────────
 .PHONY: setup
-setup: certs up migrate ## First-time setup: generate certs, start containers, run migrations
+setup: hosts certs up migrate ## First-time setup: add /etc/hosts entries, generate certs, start containers, run migrations
+
+.PHONY: hosts
+hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
+	@grep -q "atlas.local" /etc/hosts && echo "/etc/hosts already configured, skipping." || \
+		sudo sh -c 'echo "127.0.0.1  atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'
 
 .PHONY: certs
 certs: ## Generate local TLS certificates via mkcert
