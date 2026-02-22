@@ -61,8 +61,12 @@ key-generate: ## Generate Laravel APP_KEY and write it to backend/.env
 
 .PHONY: hosts
 hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
-	@grep -q "atlas.local" /etc/hosts && echo "/etc/hosts already configured, skipping." || \
-		sudo sh -c 'echo "127.0.0.1  atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'
+	@if grep -q "atlas.local" /etc/hosts; then \
+		echo "/etc/hosts already configured, skipping."; \
+	else \
+		echo "sudo required to add '127.0.0.1 atlas.local' and '127.0.0.1 api.atlas.local' to /etc/hosts"; \
+		sudo sh -c 'echo "127.0.0.1  atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'; \
+	fi
 
 .PHONY: hosts-clean
 hosts-clean: ## Remove atlas.local entries from /etc/hosts (requires sudo)
