@@ -8,7 +8,7 @@ volumes:
   postgres_data:
   redis_data:
   minio_data:
-  frontend_node_modules:
+  dashboard_node_modules:
 
 services:
   nginx:
@@ -21,71 +21,74 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/certs:/etc/nginx/certs:ro
-      - ./backend:/var/www/html:ro
+      - ../apps/api:/var/www/html:ro
     depends_on:
       - php
-      - frontend
+      - dashboard
     networks: [app_network]
 
   php:
     build:
-      context: ./backend
+      context: ../apps/api
       dockerfile: Dockerfile
     container_name: atlas-php
     restart: unless-stopped
     volumes:
-      - ./backend:/var/www/html
+      - ../apps/api:/var/www/html
     depends_on:
       postgres: { condition: service_healthy }
       redis:    { condition: service_healthy }
     networks: [app_network]
-    env_file: ./backend/.env
+    env_file: ../apps/api/.env
 
   horizon:
     build:
-      context: ./backend
+      context: ../apps/api
       dockerfile: Dockerfile
     container_name: atlas-horizon
     restart: unless-stopped
     command: ["php", "artisan", "horizon"]
     volumes:
-      - ./backend:/var/www/html
+      - ../apps/api:/var/www/html
     depends_on:
       php:
         condition: service_started
       redis:
         condition: service_healthy
     networks: [app_network]
-    env_file: ./backend/.env
+    env_file: ../apps/api/.env
 
   reverb:
     build:
-      context: ./backend
+      context: ../apps/api
       dockerfile: Dockerfile
     container_name: atlas-reverb
     restart: unless-stopped
     command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080", "--debug"]
     volumes:
-      - ./backend:/var/www/html
+      - ../apps/api:/var/www/html
     depends_on:
       php:
         condition: service_started
       redis:
         condition: service_healthy
     networks: [app_network]
-    env_file: ./backend/.env
+    env_file: ../apps/api/.env
 
-  frontend:
+  dashboard:
     build:
-      context: ./frontend
+      context: ../apps/dashboard
       dockerfile: Dockerfile
-    container_name: atlas-frontend
+    container_name: atlas-dashboard
     restart: unless-stopped
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - ../apps/dashboard:/app
+      - ../packages:/app/packages
+      - dashboard_node_modules:/app/node_modules
+    environment:
+      VITE_PACKAGES_PATH: /app/packages
     networks: [app_network]
-    env_file: ./frontend/.env
+    env_file: ../apps/dashboard/.env
 
   postgres:
     image: postgres:16-alpine

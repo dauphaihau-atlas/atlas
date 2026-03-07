@@ -1,11 +1,11 @@
 # Atlas
 
-Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and frontend (React) via Docker Compose.
+Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and dashboard (React) via Docker Compose.
 
 ## Repositories
 
 - [atlas-be](https://github.com/dauphaihau/atlas-be) — Laravel backend
-- [atlas-web](https://github.com/dauphaihau/atlas-web) — React frontend
+- [atlas-web](https://github.com/dauphaihau/atlas-web) — React dashboard
 
 ## Prerequisites
 
@@ -44,9 +44,9 @@ make launch
 
 | Step | What it does |
 |---|---|
-| `clone` | Clones `atlas-be` → `backend/` and `atlas-web` → `frontend/` |
-| `env` | Copies `.env` templates for backend and frontend |
-| `hosts` | Adds `atlas.local` and `api.atlas.local` to `/etc/hosts` *(prompts for sudo)* |
+| `clone` | Clones `atlas-be` → `apps/api/` and `atlas-web` → `apps/dashboard/` |
+| `env` | Copies `.env` templates for backend and dashboard |
+| `hosts` | Adds `admin.atlas.local` and `api.atlas.local` to `/etc/hosts` *(prompts for sudo)* |
 | `certs` | Installs `mkcert` (via Homebrew if needed) and generates local TLS certificates |
 | `up` | Starts all Docker containers |
 | `composer-install` | Installs PHP dependencies |
@@ -54,11 +54,11 @@ make launch
 | `migrate-fresh-seed` | Runs migrations and seeds the database |
 | `docs` | Generates API documentation via Scribe |
 
-> `backend/` and `frontend/` are independent git repositories cloned into this monorepo shell. Run git commands for each from their own directory.
+> `apps/api/` and `apps/dashboard/` are independent git repositories cloned into this monorepo shell. Run git commands for each from their own directory.
 
 Once complete, the app is available at:
 
-- `https://atlas.local` — frontend
+- `https://admin.atlas.local` — dashboard
 - `https://api.atlas.local` — backend API
 - `http://localhost:8025` — Mailpit (email)
 - `http://localhost:9001` — MinIO console (storage)
@@ -71,7 +71,7 @@ Once complete, the app is available at:
 | `atlas-php` | Laravel application (PHP-FPM) |
 | `atlas-horizon` | Laravel Horizon (queue worker) |
 | `atlas-reverb` | Laravel Reverb (WebSockets) |
-| `atlas-frontend` | React (Vite) frontend |
+| `atlas-dashboard` | React (Vite) dashboard |
 | `atlas-postgres` | PostgreSQL 16 |
 | `atlas-redis` | Redis 7 |
 | `atlas-minio` | MinIO (S3-compatible object storage) |
@@ -101,14 +101,14 @@ make docs                # Regenerate API docs
 
 ```bash
 make teardown      # Stop containers; remove /etc/hosts entries, certs, and .env files (keeps cloned repos)
-make teardown-all  # Everything above + remove backend/ and frontend/
+make teardown-all  # Everything above + remove apps/api/ and apps/dashboard/
 ```
 
 Individual cleanup targets are also available if you only need to undo a specific step:
 
 ```bash
-make hosts-clean   # Remove atlas.local entries from /etc/hosts
+make hosts-clean   # Remove admin.atlas.local entries from /etc/hosts
 make certs-clean   # Remove generated TLS certificates
-make env-clean     # Remove backend/.env and frontend/.env
-make clone-clean   # Remove backend/ and frontend/ directories
+make env-clean     # Remove apps/api/.env and apps/dashboard/.env
+make clone-clean   # Remove apps/api/ and apps/dashboard/ directories
 ```

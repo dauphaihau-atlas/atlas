@@ -1,8 +1,8 @@
 PHP = docker compose exec php
-DC  = docker compose
+DC  = docker compose -f infra/docker-compose.yml
 
 BACKEND_REPO  ?= https://github.com/dauphaihau/atlas-be.git
-FRONTEND_REPO ?= https://github.com/dauphaihau/atlas-web.git
+DASHBOARD_REPO ?= https://github.com/dauphaihau/atlas-web.git
 MINIO_BUCKET  ?= local
 
 .DEFAULT_GOAL := help
@@ -19,54 +19,60 @@ help:
 # Clone
 # ──────────────────────────────────────────────
 .PHONY: clone
-clone: clone-backend clone-frontend ## Clone both backend and frontend repos
+clone: clone-backend clone-dashboard ## Clone both backend and dashboard repos
 
 .PHONY: clone-backend
 clone-backend: ## Clone backend repo  (override: make clone-backend BACKEND_REPO=<url>)
-	@if [ -d backend/.git ]; then \
-		echo "backend/ already cloned, skipping."; \
+	@if [ -d apps/api/.git ]; then \
+		echo "apps/api/ already cloned, skipping."; \
 	else \
-		git clone $(BACKEND_REPO) backend; \
+		mkdir -p apps && git clone $(BACKEND_REPO) apps/api; \
 	fi
 
-.PHONY: clone-frontend
-clone-frontend: ## Clone frontend repo  (override: make clone-frontend FRONTEND_REPO=<url>)
-	@if [ -d frontend/.git ]; then \
-		echo "frontend/ already cloned, skipping."; \
+.PHONY: clone-dashboard
+clone-dashboard: ## Clone dashboard repo  (override: make clone-dashboard DASHBOARD_REPO=<url>)
+	@if [ -d apps/dashboard/.git ]; then \
+		echo "apps/dashboard/ already cloned, skipping."; \
 	else \
-		git clone $(FRONTEND_REPO) frontend; \
+		mkdir -p apps && git clone $(DASHBOARD_REPO) apps/dashboard; \
 	fi
 
 .PHONY: clone-clean
-clone-clean: ## Remove cloned backend/ and frontend/ directories
-	rm -rf backend frontend
+clone-clean: ## Remove cloned backend/ and dashboard/ directories
+	rm -rf apps/api apps/dashboard
 
 # ──────────────────────────────────────────────
 # Setup
 # ──────────────────────────────────────────────
 .PHONY: launch
-launch: clone env hosts certs up minio-setup composer-install key-generate migrate-fresh-seed docs ## First-time launch: clone repos, copy .env files, add /etc/hosts entries, generate certs, start containers, create MinIO bucket, install deps, generate app key, run migrations, seed DB, generate API docs
+launch: clone env key-generate hosts certs up minio-setup composer-install migrate-fresh-seed docs ## First-time launch: clone repos, copy .env files, generate app key, add /etc/hosts entries, generate certs, start containers, create MinIO bucket, install deps, run migrations, seed DB, generate API docs
 
 .PHONY: env
-env: ## Copy Docker-ready .env templates to backend/ and frontend/ (skips if already exists)
-	@[ -f backend/.env ]  || cp templates/backend.env  backend/.env
-	@[ -f frontend/.env ] || cp templates/frontend.env frontend/.env
+env: ## Copy Docker-ready .env templates to backend/ and dashboard/ (skips if already exists)
+	@[ -f apps/api/.env ]       || cp infra/env-examples/backend.env   apps/api/.env
+	@[ -f apps/dashboard/.env ] || cp infra/env-examples/dashboard.env apps/dashboard/.env
 
 .PHONY: env-clean
-env-clean: ## Remove backend/.env and frontend/.env
-	rm -f backend/.env frontend/.env
+env-clean: ## Remove backend/.env and dashboard/.env
+	rm -f apps/api/.env apps/dashboard/.env
 
 .PHONY: key-generate
-key-generate: ## Generate Laravel APP_KEY and write it to backend/.env
-	$(PHP) php artisan key:generate --force
+key-generate: ## Generate Laravel APP_KEY and write it to backend/.env (runs on host, no container needed)
+	@if grep -q "^APP_KEY=base64:" apps/api/.env; then \
+		echo "APP_KEY already set, skipping."; \
+	else \
+		KEY=$$(openssl rand -base64 32) && \
+		sed -i '' "s|^APP_KEY=.*|APP_KEY=base64:$$KEY|" apps/api/.env && \
+		echo "APP_KEY generated."; \
+	fi
 
 .PHONY: hosts
-hosts: ## Add atlas.local and api.atlas.local to /etc/hosts (requires sudo)
-	@if grep -q "atlas.local" /etc/hosts; then \
+hosts: ## Add admin.atlas.local and api.atlas.local to /etc/hosts (requires sudo)
+	@if grep -q "admin.atlas.local" /etc/hosts; then \
 		echo "/etc/hosts already configured, skipping."; \
 	else \
-		echo "sudo required to add '127.0.0.1 atlas.local' and '127.0.0.1 api.atlas.local' to /etc/hosts"; \
-		sudo sh -c 'echo "127.0.0.1  atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'; \
+		echo "sudo required to add '127.0.0.1 admin.atlas.local' and '127.0.0.1 api.atlas.local' to /etc/hosts"; \
+		sudo sh -c 'echo "127.0.0.1  admin.atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'; \
 	fi
 
 .PHONY: hosts-clean
@@ -76,11 +82,11 @@ hosts-clean: ## Remove atlas.local entries from /etc/hosts (requires sudo)
 
 .PHONY: certs
 certs: ## Generate local TLS certificates via mkcert
-	bash setup-certs.sh
+	bash infra/setup-certs.sh
 
 .PHONY: certs-clean
 certs-clean: ## Remove generated TLS certificates from nginx/certs/
-	rm -f nginx/certs/*.crt nginx/certs/*.key
+	rm -f infra/nginx/certs/*.crt infra/nginx/certs/*.key
 
 # ──────────────────────────────────────────────
 # Docker
@@ -177,6 +183,18 @@ pint: ## Run Laravel Pint code formatter
 .PHONY: pint-test
 pint-test: ## Check formatting without making changes
 	$(PHP) vendor/bin/pint --test
+
+CSV_ROWS ?= 100
+CSV_OUT  ?= data-test/users.csv
+
+.PHONY: gen-csv
+gen-csv: ## Generate a test users CSV for import  (override: make gen-csv CSV_ROWS=500 CSV_OUT=data-test/my.csv)
+	@mkdir -p data-test
+	@echo "name,email,password" > $(CSV_OUT)
+	@for i in $$(seq 1 $(CSV_ROWS)); do \
+		printf "User %d,user%d@example.com,Password1!\n" $$i $$i; \
+	done >> $(CSV_OUT)
+	@echo "Generated $(CSV_ROWS) rows → $(CSV_OUT)"
 
 # ──────────────────────────────────────────────
 # Composer

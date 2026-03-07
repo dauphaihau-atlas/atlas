@@ -1,5 +1,11 @@
 nginx/certs/
+infra/nginx/certs/
+node_modules/
+dist/
+data-test/
+.playwright-mcp/
 
 # Subproject repos (managed separately)
-backend/
-frontend/
+apps/api/
+apps/dashboard/
+apps/web/

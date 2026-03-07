@@ -1,0 +1,9 @@
+{
+  "name": "atlas",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "mcp-servers/*"
+  ]
+}
