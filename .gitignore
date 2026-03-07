@@ -1,6 +1,7 @@
 nginx/certs/
 infra/nginx/certs/
 node_modules/
+.mcp.json
 dist/
 data-test/
 .playwright-mcp/
