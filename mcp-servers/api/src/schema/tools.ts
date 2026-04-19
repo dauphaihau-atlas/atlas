@@ -29,6 +29,74 @@ function formatRows(rows: Record<string, unknown>[]): string {
 }
 
 export function registerSchemaTools(server: McpServer, pool: Pool): void {
+  server.registerTool('list_users', {
+    title: 'List Users',
+    description: 'List users from the users table with optional search, tenant filter, soft-delete inclusion, and result limit.',
+    inputSchema: {
+      search: z.string().optional().describe('Case-insensitive search against user name or email'),
+      tenantId: z.number().int().positive().optional().describe('Filter by tenant_id'),
+      includeDeleted: z.boolean().optional().describe('Include soft-deleted users. Defaults to false.'),
+      limit: z.number().int().min(1).max(200).optional().describe('Maximum number of users to return. Defaults to 50.'),
+    },
+  }, async ({ search, tenantId, includeDeleted, limit }) => {
+    try {
+      const where: string[] = [];
+      const params: Array<string | number> = [];
+
+      if (!includeDeleted) {
+        where.push('deleted_at IS NULL');
+      }
+
+      if (typeof tenantId === 'number') {
+        params.push(tenantId);
+        where.push(`tenant_id = $${params.length}`);
+      }
+
+      if (search) {
+        params.push(`%${search}%`);
+        where.push(`(name ILIKE $${params.length} OR email ILIKE $${params.length})`);
+      }
+
+      const safeLimit = limit ?? 50;
+      params.push(safeLimit);
+
+      const result = await pool.query<{
+        id: string;
+        tenant_id: string | null;
+        name: string;
+        email: string;
+        email_verified_at: string | null;
+        avatar_path: string | null;
+        created_at: string;
+        updated_at: string;
+        deleted_at: string | null;
+      }>(`
+        SELECT
+          id::text,
+          tenant_id::text,
+          name,
+          email,
+          email_verified_at::text,
+          avatar_path,
+          created_at::text,
+          updated_at::text,
+          deleted_at::text
+        FROM users
+        ${where.length > 0 ? `WHERE ${where.join(' AND ')}` : ''}
+        ORDER BY id
+        LIMIT $${params.length}
+      `, params);
+
+      if (result.rows.length === 0) {
+        return text('No users found.');
+      }
+
+      return text(formatRows(result.rows as Record<string, unknown>[]));
+    } catch (e: unknown) {
+      return err(`Database error: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  });
+
   server.registerTool('list_tables', {
     title: 'List Database Tables',
     description: 'List all user-created tables in the public schema with approximate row counts from pg_stat_user_tables.',

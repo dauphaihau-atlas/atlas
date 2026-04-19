@@ -80,6 +80,7 @@ Add the following to your project-level `.mcp.json`:
 ### Database
 | Tool | Description |
 |---|---|
+| `list_users` | List users with optional search, tenant filter, soft-delete inclusion, and result limit |
 | `list_tables` | List all tables in the public schema with approximate row counts |
 | `describe_table` | Show columns, types, nullability, and defaults for a table |
 | `run_query` | Execute a read-only SQL query (SELECT, EXPLAIN, WITH only) |
