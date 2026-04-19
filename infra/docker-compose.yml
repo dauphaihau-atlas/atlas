@@ -87,6 +87,9 @@ services:
       - dashboard_node_modules:/app/node_modules
     environment:
       VITE_PACKAGES_PATH: /app/packages
+      # Docker bind mounts can miss native file events, so force polling for Vite dev watch.
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "300"
     networks: [app_network]
     env_file: ../apps/dashboard/.env
 
