@@ -10,3 +10,8 @@ data-test/
 apps/api/
 apps/dashboard/
 apps/web/
+
+# Experimental apps
+apps/e2e-tests/
+apps/cli/
+apps/api-tests/
