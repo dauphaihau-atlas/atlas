@@ -165,7 +165,7 @@ logs-reverb:
 # Laravel / Artisan
 # ──────────────────────────────────────────────
 
-# Run an artisan command  (e.g. just artisan route:list)
+# Run an artisan command  (e.g. just artisan route:list  |  just artisan "app:my-command --dry-run")
 artisan cmd:
     {{PHP}} php artisan {{cmd}}
 
@@ -253,7 +253,7 @@ docs:
 # ──────────────────────────────────────────────
 
 # Open a shell inside the PHP container
-shell:
+shell-php:
     {{PHP}} bash
 
 # Run a command inside a specific service/container

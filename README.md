@@ -1,15 +1,15 @@
 # Atlas
 
-Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and dashboard (React) via Docker Compose.
+Full-stack local development environment for Atlas, orchestrating the backend (Laravel) and frontends (React) via Docker Compose.
 
 ## Repositories
 
-- [atlas-be](https://github.com/dauphaihau/atlas-be) — Laravel backend
-- [atlas-web](https://github.com/dauphaihau/atlas-web) — React dashboard
+- [atlas-be](https://github.com/dauphaihau/atlas-be) — Laravel backend (`apps/api/`)
+- [atlas-web](https://github.com/dauphaihau/atlas-web) — React dashboard (`apps/dashboard/`)
 
 ## Prerequisites
 
-- **`make`** — comes with Xcode CLI tools on macOS (`xcode-select --install`)
+- **`just`** — task runner (`brew install just`)
 - **Docker** — choose one:
   - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (easiest)
 
@@ -20,37 +20,31 @@ Full-stack local development environment for Atlas, orchestrating the backend (L
     brew install colima docker docker-compose
     colima start
     ```
-    > Colima must be running (`colima start`) before `make launch` and on each machine restart.
+    > Colima must be running (`colima start`) before `just launch` and on each machine restart.
 
-    **If your project is outside your home directory** (e.g. on an external volume like `/Volumes/...`), you must explicitly mount that path in Colima's config, otherwise containers will see an empty directory.
-
-    Add the path to `~/.colima/default/colima.yaml`:
-    ```yaml
-    mounts:
-      - location: /Volumes/Local/dev/pj-personal  # adjust to your path
-        writable: true
-    ```
-    Then apply with `colima restart`.
+    `just launch` automatically detects Colima and configures the required volume mount if the project is outside your home directory.
 
 ## Getting Started
 
 ```bash
 git clone https://github.com/dauphaihau/atlas.git
 cd atlas
-make launch
+just launch
 ```
 
-`make launch` handles everything in one step:
+`just launch` handles everything in one step:
 
 | Step | What it does |
 |---|---|
 | `clone` | Clones `atlas-be` → `apps/api/` and `atlas-web` → `apps/dashboard/` |
 | `env` | Copies `.env` templates for backend and dashboard |
+| `key-generate` | Generates Laravel `APP_KEY` |
 | `hosts` | Adds `admin.atlas.local` and `api.atlas.local` to `/etc/hosts` *(prompts for sudo)* |
 | `certs` | Installs `mkcert` (via Homebrew if needed) and generates local TLS certificates |
+| `colima-setup` | Configures Colima volume mount if needed (skipped for Docker Desktop) |
 | `up` | Starts all Docker containers |
+| `minio-setup` | Creates the MinIO bucket |
 | `composer-install` | Installs PHP dependencies |
-| `key-generate` | Generates Laravel `APP_KEY` |
 | `migrate-fresh-seed` | Runs migrations and seeds the database |
 | `docs` | Generates API documentation via Scribe |
 
@@ -80,35 +74,35 @@ Once complete, the app is available at:
 ## Common Commands
 
 ```bash
-make up                  # Start containers
-make down                # Stop containers
-make down-volumes        # Stop containers and delete volumes (DB data)
-make restart             # Restart containers
-make logs                # Tail all container logs
-make logs-php            # Tail PHP logs
-make test                # Run PHPUnit test suite
-make test-filter f=Foo   # Run tests matching a name
-make migrate             # Run pending migrations
-make migrate-fresh-seed  # Fresh migrations + seed
-make artisan cmd="..."   # Run any artisan command
-make shell               # Shell into PHP container
-make shell-postgres      # Open psql session
-make pint                # Run Laravel Pint formatter
-make docs                # Regenerate API docs
+just up                  # Start containers
+just down                # Stop containers
+just down-volumes        # Stop containers and delete volumes (DB data)
+just restart             # Restart containers
+just logs                # Tail all container logs
+just logs-php            # Tail PHP logs
+just test                # Run PHPUnit test suite
+just test-filter Foo     # Run tests matching a name
+just migrate             # Run pending migrations
+just migrate-fresh-seed  # Fresh migrations + seed
+just artisan route:list  # Run any artisan command
+just shell               # Shell into PHP container
+just shell-postgres      # Open psql session
+just pint                # Run Laravel Pint formatter
+just docs                # Regenerate API docs
 ```
 
 ## Teardown
 
 ```bash
-make teardown      # Stop containers; remove /etc/hosts entries, certs, and .env files (keeps cloned repos)
-make teardown-all  # Everything above + remove apps/api/ and apps/dashboard/
+just teardown      # Stop containers; remove /etc/hosts entries, certs, and .env files (keeps cloned repos)
+just teardown-all  # Everything above + remove apps/api/ and apps/dashboard/
 ```
 
 Individual cleanup targets are also available if you only need to undo a specific step:
 
 ```bash
-make hosts-clean   # Remove admin.atlas.local entries from /etc/hosts
-make certs-clean   # Remove generated TLS certificates
-make env-clean     # Remove apps/api/.env and apps/dashboard/.env
-make clone-clean   # Remove apps/api/ and apps/dashboard/ directories
+just hosts-clean   # Remove atlas.local entries from /etc/hosts
+just certs-clean   # Remove generated TLS certificates
+just env-clean     # Remove apps/api/.env and apps/dashboard/.env
+just clone-clean   # Remove apps/api/ and apps/dashboard/ directories
 ```
