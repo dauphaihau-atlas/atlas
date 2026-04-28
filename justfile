@@ -62,10 +62,10 @@ colima-setup:
     python3 -c "import re; cfg=open('$HOME/.colima/default/colima.yaml').read(); e='  - location: $MOUNT_POINT\n    writable: true\n'; cfg=re.sub(r'^mounts: \[\]','mounts:\n'+e,cfg,flags=re.M) if 'mounts: []' in cfg else re.sub(r'^(mounts:)',r'\1\n'+e,cfg,flags=re.M); open('$HOME/.colima/default/colima.yaml','w').write(cfg)"; \
     colima stop && colima start
 
-# Copy Docker-ready .env templates to backend/ and dashboard/ (skips if already exists)
+# Copy app-owned .env templates to runtime .env files (skips if already exists)
 env:
-    @[ -f apps/api/.env ]       || cp infra/env-examples/backend.env   apps/api/.env
-    @[ -f apps/dashboard/.env ] || cp infra/env-examples/dashboard.env apps/dashboard/.env
+    @[ -f apps/api/.env ]       || cp apps/api/.env.example            apps/api/.env
+    @[ -f apps/dashboard/.env ] || cp apps/dashboard/.env.example      apps/dashboard/.env
 
 # Remove backend/.env and dashboard/.env
 env-clean:

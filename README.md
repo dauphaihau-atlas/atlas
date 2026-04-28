@@ -37,7 +37,7 @@ just launch
 | Step | What it does |
 |---|---|
 | `clone` | Clones `atlas-be` → `apps/api/` and `atlas-web` → `apps/dashboard/` |
-| `env` | Copies `.env` templates for backend and dashboard |
+| `env` | Copies app-owned `.env.example` files to `apps/api/.env` and `apps/dashboard/.env` |
 | `key-generate` | Generates Laravel `APP_KEY` |
 | `hosts` | Adds `admin.atlas.local` and `api.atlas.local` to `/etc/hosts` *(prompts for sudo)* |
 | `certs` | Installs `mkcert` (via Homebrew if needed) and generates local TLS certificates |
