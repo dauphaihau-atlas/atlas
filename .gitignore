@@ -2,6 +2,7 @@ nginx/certs/
 infra/nginx/certs/
 node_modules/
 .mcp.json
+.idea/
 dist/
 data-test/
 .playwright-mcp/
@@ -10,8 +11,9 @@ data-test/
 apps/api/
 apps/dashboard/
 apps/web/
+apps/worker-go/
 
-# Experimental apps
-apps/e2e-tests/
-apps/cli/
-apps/api-tests/
+# Dev tools
+tools/api-requests/
+tools/agent-e2e-tests/
+tools/cli/
