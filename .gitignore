@@ -1,3 +1,4 @@
+.DS_Store
 nginx/certs/
 infra/nginx/certs/
 node_modules/

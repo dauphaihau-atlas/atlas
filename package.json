@@ -4,6 +4,12 @@
   "workspaces": [
     "apps/*",
     "packages/*",
-    "mcp-servers/*"
-  ]
+    "tools/*"
+  ],
+  "scripts": {
+    "test:e2e": "cd apps/agent-e2e-tests && bun run test"
+  },
+  "dependencies": {
+    "@dauphaihau/eslint-config": "^0.2.1"
+  }
 }

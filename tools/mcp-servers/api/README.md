@@ -5,7 +5,7 @@ An MCP server that gives Claude deep understanding of the Atlas Laravel backend 
 ## Prerequisites
 
 - Node 20 (via nvm)
-- Atlas Docker stack running (`make up`)
+- Atlas Docker stack running
 
 ## Build
 
@@ -25,10 +25,10 @@ Add the following to your project-level `.mcp.json`:
 {
   "mcpServers": {
     "atlas-backend": {
-      "command": "/Users/<you>/.nvm/versions/node/v20.x.x/bin/node",
-      "args": ["<atlas-root>/backend-mcp/dist/index.js"],
+      "command": "node",
+      "args": ["<atlas-root>/tools/mcp-servers/api/dist/index.js"],
       "env": {
-        "ATLAS_BACKEND_PATH": "<atlas-root>/backend",
+        "ATLAS_BACKEND_PATH": "<atlas-root>/apps/api",
         "ATLAS_PHP_CONTAINER": "atlas-php",
         "POSTGRES_HOST": "localhost",
         "POSTGRES_PORT": "5432",
@@ -43,15 +43,19 @@ Add the following to your project-level `.mcp.json`:
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ATLAS_BACKEND_PATH` | yes | — | Absolute path to the `backend/` directory |
+| `ATLAS_BACKEND_PATH` | yes | — | Absolute path to the `apps/api/` directory |
 | `POSTGRES_PASSWORD` | yes | — | PostgreSQL password |
-| `ATLAS_PHP_CONTAINER` | no | `atlas-php-1` | Docker container name for running artisan |
+| `ATLAS_PHP_CONTAINER` | no | `atlas-php` | Docker container name for running artisan |
 | `POSTGRES_HOST` | no | `localhost` | PostgreSQL host |
 | `POSTGRES_PORT` | no | `5432` | PostgreSQL port |
 | `POSTGRES_DB` | no | `atlas` | Database name |
 | `POSTGRES_USER` | no | `laravel` | Database user |
 
-> Get the exact `node` binary path: `source ~/.nvm/nvm.sh && nvm use 20 && which node`
+If your MCP client does not resolve `node` from `PATH`, replace `"command": "node"` with the absolute binary path from:
+
+```bash
+source ~/.nvm/nvm.sh && nvm use 20 && which node
+```
 
 ## Available Tools
 
