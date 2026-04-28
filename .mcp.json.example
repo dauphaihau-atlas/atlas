@@ -1,22 +1,38 @@
 {
   "mcpServers": {
-    "playwright": {
-      "command": "npx",
+    "atlas-backend": {
+      "command": "node",
       "args": [
-        "@playwright/mcp@latest"
-      ]
-    },
-    "atlas-api": {
-      "command": "/path/to/node",
-      "args": ["/path/to/atlas/mcp-servers/api/dist/index.js"],
+        "/Volumes/Local/dev/pj-personal/apps/atlas/tools/mcp-servers/api/dist/index.js"
+      ],
       "env": {
-        "ATLAS_BACKEND_PATH": "/path/to/atlas/apps/api",
+        "ATLAS_BACKEND_PATH": "/Volumes/Local/dev/pj-personal/apps/atlas/apps/api",
         "ATLAS_PHP_CONTAINER": "atlas-php",
         "POSTGRES_HOST": "localhost",
         "POSTGRES_PORT": "5432",
         "POSTGRES_DB": "atlas",
         "POSTGRES_USER": "laravel",
-        "POSTGRES_PASSWORD": "your-password"
+        "POSTGRES_PASSWORD": "secret"
+      }
+    },
+    "atlas-project": {
+      "command": "node",
+      "args": [
+        "/Volumes/Local/dev/pj-personal/apps/atlas/tools/mcp-servers/project/dist/index.js"
+      ],
+      "env": {
+        "ATLAS_API_URL": "http://localhost:8000/api/v1",
+        "ATLAS_API_TOKEN": "replace-with-a-real-token",
+        "ATLAS_TENANT_ID": ""
+      }
+    },
+    "atlas-dashboard": {
+      "command": "node",
+      "args": [
+        "/Volumes/Local/dev/pj-personal/apps/atlas/tools/mcp-servers/dashboard/dist/index.js"
+      ],
+      "env": {
+        "ATLAS_DASHBOARD_PATH": "/Volumes/Local/dev/pj-personal/apps/atlas/apps/dashboard"
       }
     }
   }
