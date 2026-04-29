@@ -4,8 +4,9 @@ Full-stack local development environment for Atlas, orchestrating the backend (L
 
 ## Repositories
 
-- [atlas-be](https://github.com/dauphaihau/atlas-be) — Laravel backend (`apps/api/`)
-- [atlas-web](https://github.com/dauphaihau/atlas-web) — React dashboard (`apps/dashboard/`)
+- [api](https://github.com/dauphaihau-atlas/api) — Laravel backend (`apps/api/`)
+- [dashboard](https://github.com/dauphaihau-atlas/dashboard) — React dashboard (`apps/dashboard/`)
+- [worker-go](https://github.com/dauphaihau-atlas/worker-go) — Go worker (`apps/worker-go/`)
 
 ## Prerequisites
 
@@ -36,10 +37,10 @@ just launch
 
 | Step | What it does |
 |---|---|
-| `clone` | Clones `atlas-be` → `apps/api/` and `atlas-web` → `apps/dashboard/` |
+| `clone` | Clones `api` → `apps/api/`, `dashboard` → `apps/dashboard/`, `worker-go` → `apps/worker-go/` |
 | `env` | Copies app-owned `.env.example` files to `apps/api/.env` and `apps/dashboard/.env` |
 | `key-generate` | Generates Laravel `APP_KEY` |
-| `hosts` | Adds `admin.atlas.local` and `api.atlas.local` to `/etc/hosts` *(prompts for sudo)* |
+| `hosts` | Adds `app.atlas.local` and `api.atlas.local` to `/etc/hosts` *(prompts for sudo)* |
 | `certs` | Installs `mkcert` (via Homebrew if needed) and generates local TLS certificates |
 | `colima-setup` | Configures Colima volume mount if needed (skipped for Docker Desktop) |
 | `up` | Starts all Docker containers |
@@ -48,11 +49,11 @@ just launch
 | `migrate-fresh-seed` | Runs migrations and seeds the database |
 | `docs` | Generates API documentation via Scribe |
 
-> `apps/api/` and `apps/dashboard/` are independent git repositories cloned into this monorepo shell. Run git commands for each from their own directory.
+> `apps/api/`, `apps/dashboard/`, and `apps/worker-go/` are independent git repositories. Run git commands for each from their own directory.
 
 Once complete, the app is available at:
 
-- `https://admin.atlas.local` — dashboard
+- `https://app.atlas.local` — dashboard
 - `https://api.atlas.local` — backend API
 - `http://localhost:8025` — Mailpit (email)
 - `http://localhost:9001` — MinIO console (storage)
@@ -65,6 +66,7 @@ Once complete, the app is available at:
 | `atlas-php` | Laravel application (PHP-FPM) |
 | `atlas-horizon` | Laravel Horizon (queue worker) |
 | `atlas-reverb` | Laravel Reverb (WebSockets) |
+| `atlas-worker-go` | Go worker (bulk import, async tasks) |
 | `atlas-dashboard` | React (Vite) dashboard |
 | `atlas-postgres` | PostgreSQL 16 |
 | `atlas-redis` | Redis 7 |
@@ -85,7 +87,7 @@ just test-filter Foo     # Run tests matching a name
 just migrate             # Run pending migrations
 just migrate-fresh-seed  # Fresh migrations + seed
 just artisan route:list  # Run any artisan command
-just shell               # Shell into PHP container
+just shell-php           # Shell into PHP container
 just shell-postgres      # Open psql session
 just pint                # Run Laravel Pint formatter
 just docs                # Regenerate API docs

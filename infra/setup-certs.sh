@@ -21,9 +21,9 @@ mkdir -p "$CERTS_DIR"
 
 # Generate certificates
 mkcert \
-    -cert-file "$CERTS_DIR/admin.atlas.local.crt" \
-    -key-file  "$CERTS_DIR/admin.atlas.local.key" \
-    admin.atlas.local
+    -cert-file "$CERTS_DIR/app.atlas.local.crt" \
+    -key-file  "$CERTS_DIR/app.atlas.local.key" \
+    app.atlas.local
 
 mkcert \
     -cert-file "$CERTS_DIR/api.atlas.local.crt" \

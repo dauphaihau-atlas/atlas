@@ -1,8 +1,9 @@
 PHP := "docker compose -f infra/docker-compose.yml exec php"
 DC  := "docker compose -f infra/docker-compose.yml"
 
-BACKEND_REPO   := env("BACKEND_REPO",   "https://github.com/dauphaihau/atlas-be.git")
-DASHBOARD_REPO := env("DASHBOARD_REPO", "https://github.com/dauphaihau/atlas-web.git")
+BACKEND_REPO   := env("BACKEND_REPO",   "https://github.com/dauphaihau-atlas/api.git")
+DASHBOARD_REPO := env("DASHBOARD_REPO", "https://github.com/dauphaihau-atlas/dashboard.git")
+WORKER_GO_REPO := env("WORKER_GO_REPO", "https://github.com/dauphaihau-atlas/worker-go.git")
 MINIO_BUCKET   := env("MINIO_BUCKET",   "local")
 
 # List all available recipes
@@ -13,8 +14,8 @@ default:
 # Clone
 # ──────────────────────────────────────────────
 
-# Clone both backend and dashboard repos
-clone: clone-backend clone-dashboard
+# Clone all repos (backend, dashboard, worker-go)
+clone: clone-backend clone-dashboard clone-worker-go
 
 # Clone backend repo  (override: BACKEND_REPO=<url> just clone-backend)
 clone-backend:
@@ -32,9 +33,17 @@ clone-dashboard:
         mkdir -p apps && git clone {{DASHBOARD_REPO}} apps/dashboard; \
     fi
 
-# Remove cloned backend/ and dashboard/ directories
+# Clone Go worker repo  (override: WORKER_GO_REPO=<url> just clone-worker-go)
+clone-worker-go:
+    @if [ -d apps/worker-go/.git ]; then \
+        echo "apps/worker-go/ already cloned, skipping."; \
+    else \
+        mkdir -p apps && git clone {{WORKER_GO_REPO}} apps/worker-go; \
+    fi
+
+# Remove cloned repos
 clone-clean:
-    rm -rf apps/api apps/dashboard
+    rm -rf apps/api apps/dashboard apps/worker-go
 
 # ──────────────────────────────────────────────
 # Setup
@@ -81,13 +90,13 @@ key-generate:
         echo "APP_KEY generated."; \
     fi
 
-# Add admin.atlas.local and api.atlas.local to /etc/hosts (requires sudo)
+# Add app.atlas.local and api.atlas.local to /etc/hosts (requires sudo)
 hosts:
-    @if grep -q "admin.atlas.local" /etc/hosts; then \
+    @if grep -q "app.atlas.local" /etc/hosts; then \
         echo "/etc/hosts already configured, skipping."; \
     else \
-        echo "sudo required to add '127.0.0.1 admin.atlas.local' and '127.0.0.1 api.atlas.local' to /etc/hosts"; \
-        sudo sh -c 'echo "127.0.0.1  admin.atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'; \
+        echo "sudo required to add '127.0.0.1 app.atlas.local' and '127.0.0.1 api.atlas.local' to /etc/hosts"; \
+        sudo sh -c 'echo "127.0.0.1  app.atlas.local\n127.0.0.1  api.atlas.local" >> /etc/hosts'; \
     fi
 
 # Remove atlas.local entries from /etc/hosts (requires sudo)
@@ -125,6 +134,11 @@ restart: down up
 # Restart a specific service/container
 restart-service service:
     {{DC}} restart {{service}}
+
+# Force-recreate the PHP + Horizon containers (picks up .env changes), then reload nginx so it picks up the new container IP
+restart-php:
+    {{DC}} up -d --force-recreate php horizon
+    docker exec atlas-nginx nginx -s reload
 
 # Rebuild all images
 build:
@@ -185,6 +199,10 @@ migrate-fresh-seed:
 seed:
     {{PHP}} php artisan db:seed
 
+# Clear the Laravel config cache
+config-clear:
+    {{PHP}} php artisan config:clear
+
 # Open Laravel Tinker REPL
 tinker:
     {{PHP}} php artisan tinker
@@ -222,9 +240,9 @@ delete-test-users:
 # Generate a test users CSV for import  (override: just gen-csv 500 data-test/my.csv)
 gen-users-csv rows="100" out="data-test/users.csv":
     @mkdir -p $(dirname {{out}})
-    @echo "name,email,password" > {{out}}
+    @echo "name,email,role" > {{out}}
     @for i in $(seq 1 {{rows}}); do \
-        printf "User %d,user%d@example.com,Password1!\n" $i $i; \
+        printf "User %d,user%d@example.com,user\n" $i $i; \
     done >> {{out}}
     @echo "Generated {{rows}} rows → {{out}}"
 
