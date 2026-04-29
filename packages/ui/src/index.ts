@@ -17,6 +17,19 @@ export {
 } from "./pagination"
 export { Progress } from "./progress"
 export { Input } from "./input"
+export { Checkbox } from "./checkbox"
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./select"
 export { Separator } from "./separator"
 export {
   Sheet,
